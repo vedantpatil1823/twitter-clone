@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  name       String?
+  username   String?  @unique
+  email      String   @unique
+  password   String?
+  image      String?
+  coverImage String?
+  bio        String?  @db.VarChar(160)
+  location   String?
+  website    String?
+  verified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tweets        Tweet[]
+  likes         Like[]
+  retweets      Retweet[]
+  bookmarks     Bookmark[]
+  followers     Follow[]       @relation("following")
+  following     Follow[]       @relation("follower")
+  notifications Notification[] @relation("recipient")
+  sentNotifs    Notification[] @relation("sender")
+  accounts      Account[]
+  sessions      Session[]
+
+  @@index([username])
+  @@index([email])
+}
+
+model Tweet {
+  id        String   @id @default(cuid())
+  content   String   @db.VarChar(280)
+  image     String?
+  authorId  String
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Tweet?    @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Tweet[]   @relation("replies")
+  likes     Like[]
+  retweets  Retweet[]
+  bookmarks Bookmark[]
+  notifs    Notification[]
+
+  @@index([authorId])
+  @@index([parentId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Like {
+  userId    String
+  tweetId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tweetId])
+  @@index([tweetId])
+}
+
+model Retweet {
+  userId    String
+  tweetId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tweetId])
+  @@index([tweetId])
+}
+
+model Bookmark {
+  userId    String
+  tweetId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tweetId])
+  @@index([userId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  read        Boolean          @default(false)
+  recipientId String
+  senderId    String
+  tweetId     String?
+  createdAt   DateTime         @default(now())
+
+  recipient User   @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender    User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  tweet     Tweet? @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, read])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum NotificationType {
+  LIKE
+  RETWEET
+  FOLLOW
+  REPLY
+  MENTION
+}
+
+// NextAuth required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
