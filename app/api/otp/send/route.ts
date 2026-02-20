@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ function generateOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export async function POST(req: NextRequest) {
+export async function POST() {
     const session = await auth();
     if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,18 +29,11 @@ export async function POST(req: NextRequest) {
         data: { email, code, purpose: "audio_tweet", expiresAt },
     });
 
-    // Send email
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-
+    // Send email via Resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
     try {
-        await transporter.sendMail({
-            from: `"Twitter Clone" <${process.env.EMAIL_USER}>`,
+        await resend.emails.send({
+            from: process.env.EMAIL_FROM ?? "onboarding@resend.dev",
             to: email,
             subject: "Your OTP for Audio Tweet",
             html: `
@@ -54,8 +47,9 @@ export async function POST(req: NextRequest) {
         });
     } catch (err) {
         console.error("Email error:", err);
-        return NextResponse.json({ error: "Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS env vars." }, { status: 500 });
+        return NextResponse.json({ error: "Failed to send OTP email." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
 }
+
