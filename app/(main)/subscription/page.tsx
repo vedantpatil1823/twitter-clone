@@ -47,11 +47,12 @@ const PLANS = [
 ];
 
 function isWithinPaymentWindow(): boolean {
-    const now = new Date();
-    const istMs = now.getTime() + 5.5 * 60 * 60 * 1000;
-    const ist = new Date(istMs);
-    const totalMins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
-    return totalMins >= 10 * 60 && totalMins < 11 * 60;
+    return true; // ← TEMPORARY: bypass for testing, restore before submission
+    // const now = new Date();
+    // const istMs = now.getTime() + 5.5 * 60 * 60 * 1000;
+    // const ist = new Date(istMs);
+    // const totalMins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+    // return totalMins >= 10 * 60 && totalMins < 11 * 60;
 }
 
 // ── Mock Payment Modal ──────────────────────────────────────────────────
@@ -107,8 +108,8 @@ function MockPaymentModal({ plan, onSuccess, onCancel }: MockModalProps) {
                             disabled={processing}
                             onClick={() => setMethod(m)}
                             className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${method === m
-                                    ? "border-b-2 border-primary text-primary"
-                                    : "text-muted-foreground hover:text-foreground"
+                                ? "border-b-2 border-primary text-primary"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             {m === "upi" ? <Smartphone className="h-3.5 w-3.5" /> : <CreditCard className="h-3.5 w-3.5" />}

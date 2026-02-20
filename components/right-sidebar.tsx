@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { SidebarSearch } from "@/components/sidebar-search";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 async function getTrendingHashtags() {
     // Fetch recent 500 tweets and parse hashtags from content
@@ -134,6 +135,11 @@ export async function RightSidebar() {
                     </button>
                 </div>
             )}
+
+            {/* Language Switcher */}
+            <div className="px-2 mb-3">
+                <LanguageSwitcher />
+            </div>
 
             {/* Footer Links */}
             <div className="flex flex-wrap gap-x-3 gap-y-1 px-2 text-xs text-muted-foreground">
