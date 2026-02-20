@@ -4,6 +4,7 @@ import { TweetCard, TweetWithAuthor } from "@/components/tweet-card";
 import { TweetComposer } from "@/components/tweet-composer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LiveFeedBanner } from "@/components/live-feed-banner";
+import { KeywordNotifier } from "@/components/keyword-notifier";
 
 async function getTweets(userId: string, tab: "for-you" | "following") {
     const whereClause =
@@ -84,6 +85,9 @@ export default async function HomePage() {
 
                     {/* Live "new tweets" banner — polls every 30s */}
                     <LiveFeedBanner latestTweetAt={latestTweetAt} />
+
+                    {/* Keyword notifier — fires browser notification for 'cricket'/'science' tweets */}
+                    <KeywordNotifier tweets={forYouTweets.map(t => ({ id: t.id, content: t.content, author: t.author }))} />
 
                     {forYouTweets.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">

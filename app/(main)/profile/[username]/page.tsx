@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BadgeCheck, Calendar, Link2, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { NotificationToggle } from "@/components/notification-toggle";
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
@@ -157,6 +158,13 @@ export default async function ProfilePage({
                     </span>
                 </div>
             </div>
+
+            {/* Keyword Notifications toggle — only shown on own profile */}
+            {isOwnProfile && (
+                <div className="px-4 pb-2">
+                    <NotificationToggle />
+                </div>
+            )}
 
             {/* Tweets tabs */}
             <Tabs defaultValue="posts">
