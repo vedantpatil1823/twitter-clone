@@ -36,6 +36,28 @@ export async function createTweet(formData: FormData): Promise<TweetState> {
     const session = await auth();
     if (!session?.user?.id) return { error: "Not authenticated" };
 
+    // ── Plan limit check ──
+    const PLAN_LIMITS: Record<string, number> = { free: 1, bronze: 3, silver: 5, gold: -1 };
+    const dbUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { plan: true, tweetCount: true, planExpiresAt: true },
+    });
+
+    if (dbUser) {
+        // Reset count if plan has expired (fall back to free)
+        const plan = dbUser.planExpiresAt && dbUser.planExpiresAt < new Date()
+            ? "free"
+            : (dbUser.plan ?? "free");
+
+        const limit = PLAN_LIMITS[plan] ?? 1;
+        if (limit !== -1 && dbUser.tweetCount >= limit) {
+            const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+            return {
+                error: `You've reached your tweet limit for the ${planLabel} plan (${limit} tweet${limit !== 1 ? "s" : ""}/month). Upgrade to post more.`,
+            };
+        }
+    }
+
     const raw = {
         content: formData.get("content") as string,
         image: (formData.get("image") as string) || undefined,
@@ -54,6 +76,12 @@ export async function createTweet(formData: FormData): Promise<TweetState> {
             authorId: session.user.id,
             parentId: parentId || null,
         },
+    });
+
+    // Increment tweet count for plan tracking
+    await prisma.user.update({
+        where: { id: session.user.id },
+        data: { tweetCount: { increment: 1 } },
     });
 
     // Create notification for reply

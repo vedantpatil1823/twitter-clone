@@ -13,6 +13,7 @@ import {
     Feather,
     LogOut,
     Settings,
+    CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,6 +32,7 @@ const navItems = [
     { href: "/notifications", icon: Bell, label: "Notifications" },
     { href: "/messages", icon: Mail, label: "Messages" },
     { href: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
+    { href: "/subscription", icon: CreditCard, label: "Subscription" },
 ];
 
 export default async function LeftSidebar() {
