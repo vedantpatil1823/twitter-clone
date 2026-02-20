@@ -2,15 +2,10 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Check, Loader2, Lock } from "lucide-react";
+import { Check, Loader2, Lock, X, CreditCard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-declare global {
-    interface Window {
-        Razorpay: new (opts: Record<string, unknown>) => { open(): void };
-    }
-}
 
 const PLANS = [
     {
@@ -53,19 +48,166 @@ const PLANS = [
 
 function isWithinPaymentWindow(): boolean {
     const now = new Date();
-    const istOffset = 5.5 * 60;
-    const istMs = now.getTime() + istOffset * 60 * 1000;
+    const istMs = now.getTime() + 5.5 * 60 * 60 * 1000;
     const ist = new Date(istMs);
     const totalMins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
     return totalMins >= 10 * 60 && totalMins < 11 * 60;
 }
 
+// ── Mock Payment Modal ──────────────────────────────────────────────────
+type MockModalProps = {
+    plan: (typeof PLANS)[number];
+    onSuccess: () => void;
+    onCancel: () => void;
+};
+
+type PayMethod = "upi" | "card";
+
+function MockPaymentModal({ plan, onSuccess, onCancel }: MockModalProps) {
+    const [method, setMethod] = useState<PayMethod>("upi");
+    const [upiId, setUpiId] = useState("");
+    const [cardNum, setCardNum] = useState("");
+    const [expiry, setExpiry] = useState("");
+    const [cvv, setCvv] = useState("");
+    const [processing, setProcessing] = useState(false);
+
+    const handlePay = async () => {
+        if (method === "upi" && !upiId.includes("@")) {
+            toast.error("Enter a valid UPI ID (e.g. name@upi)");
+            return;
+        }
+        if (method === "card" && (cardNum.replace(/\s/g, "").length < 16 || !expiry || !cvv)) {
+            toast.error("Please fill in all card details.");
+            return;
+        }
+        setProcessing(true);
+        await new Promise((r) => setTimeout(r, 2200)); // simulate processing
+        onSuccess();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="bg-card border border-border rounded-2xl w-full max-w-sm mx-4 overflow-hidden shadow-2xl">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <div>
+                        <p className="text-xs text-muted-foreground">Paying for</p>
+                        <p className="font-bold text-base">{plan.name} Plan — ₹{plan.price}/mo</p>
+                    </div>
+                    <button onClick={onCancel} disabled={processing} className="p-1.5 rounded-full hover:bg-muted transition-colors">
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Method tabs */}
+                <div className="flex border-b border-border">
+                    {(["upi", "card"] as PayMethod[]).map((m) => (
+                        <button
+                            key={m}
+                            disabled={processing}
+                            onClick={() => setMethod(m)}
+                            className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${method === m
+                                    ? "border-b-2 border-primary text-primary"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                        >
+                            {m === "upi" ? <Smartphone className="h-3.5 w-3.5" /> : <CreditCard className="h-3.5 w-3.5" />}
+                            {m === "upi" ? "UPI" : "Card"}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Form */}
+                <div className="p-5 space-y-3">
+                    {method === "upi" ? (
+                        <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">UPI ID</label>
+                            <Input
+                                placeholder="yourname@upi"
+                                value={upiId}
+                                onChange={(e) => setUpiId(e.target.value)}
+                                disabled={processing}
+                                className="rounded-xl"
+                            />
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-xs text-muted-foreground mb-1 block">Card Number</label>
+                                <Input
+                                    placeholder="1234 5678 9012 3456"
+                                    value={cardNum}
+                                    maxLength={19}
+                                    onChange={(e) => {
+                                        const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                        setCardNum(v.replace(/(.{4})/g, "$1 ").trim());
+                                    }}
+                                    disabled={processing}
+                                    className="rounded-xl font-mono"
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <label className="text-xs text-muted-foreground mb-1 block">Expiry</label>
+                                    <Input
+                                        placeholder="MM/YY"
+                                        value={expiry}
+                                        maxLength={5}
+                                        onChange={(e) => {
+                                            const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                            setExpiry(v.length > 2 ? v.slice(0, 2) + "/" + v.slice(2) : v);
+                                        }}
+                                        disabled={processing}
+                                        className="rounded-xl font-mono"
+                                    />
+                                </div>
+                                <div className="w-24">
+                                    <label className="text-xs text-muted-foreground mb-1 block">CVV</label>
+                                    <Input
+                                        placeholder="•••"
+                                        type="password"
+                                        value={cvv}
+                                        maxLength={3}
+                                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                                        disabled={processing}
+                                        className="rounded-xl font-mono"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <Button
+                        onClick={handlePay}
+                        disabled={processing}
+                        className="w-full rounded-full font-bold mt-2"
+                    >
+                        {processing ? (
+                            <span className="flex items-center gap-2">
+                                <Loader2 className="animate-spin h-4 w-4" />
+                                Processing…
+                            </span>
+                        ) : (
+                            `Pay ₹${plan.price}`
+                        )}
+                    </Button>
+                    <p className="text-[11px] text-center text-muted-foreground">
+                        🔒 Simulated payment — no real money charged
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Main Page ───────────────────────────────────────────────────────────
 export default function SubscriptionPage() {
     const { data: session, update } = useSession();
+    const [activePlan, setActivePlan] = useState<(typeof PLANS)[number] | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
     const currentPlan = (session?.user as { plan?: string })?.plan ?? "free";
 
-    const handleSubscribe = async (planKey: string) => {
+    const handleSubscribe = (planKey: string) => {
         if (planKey === "free") return;
 
         if (!isWithinPaymentWindow()) {
@@ -73,74 +215,27 @@ export default function SubscriptionPage() {
             return;
         }
 
-        setLoading(planKey);
+        const plan = PLANS.find((p) => p.key === planKey);
+        if (plan) setActivePlan(plan);
+    };
+
+    const handlePaymentSuccess = async () => {
+        if (!activePlan) return;
+        setLoading(activePlan.key);
+        setActivePlan(null);
 
         try {
-            // 1. Create Razorpay order
-            const orderRes = await fetch("/api/payment/create-order", {
+            const res = await fetch("/api/payment/verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ plan: planKey }),
+                body: JSON.stringify({ plan: activePlan.key, mock: true }),
             });
-            const orderData = await orderRes.json();
-            if (!orderRes.ok) throw new Error(orderData.error);
-
-            // 2. Load Razorpay script if needed
-            if (!window.Razorpay) {
-                await new Promise<void>((resolve, reject) => {
-                    const script = document.createElement("script");
-                    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error("Failed to load Razorpay"));
-                    document.body.appendChild(script);
-                });
-            }
-
-            // 3. Open checkout
-            await new Promise<void>((resolve, reject) => {
-                const rzp = new window.Razorpay({
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                    amount: orderData.amount,
-                    currency: "INR",
-                    name: "Twitter Clone",
-                    description: `${planKey.charAt(0).toUpperCase() + planKey.slice(1)} Plan Subscription`,
-                    order_id: orderData.orderId,
-                    handler: async (response: {
-                        razorpay_order_id: string;
-                        razorpay_payment_id: string;
-                        razorpay_signature: string;
-                    }) => {
-                        // 4. Verify payment
-                        const verifyRes = await fetch("/api/payment/verify", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ ...response, plan: planKey }),
-                        });
-                        const verifyData = await verifyRes.json();
-                        if (!verifyRes.ok) {
-                            reject(new Error(verifyData.error));
-                            return;
-                        }
-                        await update(); // refresh session
-                        toast.success(`🎉 ${planKey.charAt(0).toUpperCase() + planKey.slice(1)} plan activated! Invoice sent to your email.`);
-                        resolve();
-                    },
-                    prefill: {
-                        name: session?.user?.name ?? "",
-                        email: session?.user?.email ?? "",
-                    },
-                    theme: { color: "#1d9bf0" },
-                    modal: {
-                        ondismiss: () => reject(new Error("Payment cancelled.")),
-                    },
-                });
-                rzp.open();
-            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            await update();
+            toast.success(`🎉 ${activePlan.name} plan activated! Invoice sent to your email.`);
         } catch (err: unknown) {
-            const msg = (err as Error).message;
-            if (msg !== "Payment cancelled.") {
-                toast.error(msg || "Payment failed.");
-            }
+            toast.error((err as Error).message || "Something went wrong.");
         } finally {
             setLoading(null);
         }
@@ -148,6 +243,14 @@ export default function SubscriptionPage() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
+            {activePlan && (
+                <MockPaymentModal
+                    plan={activePlan}
+                    onSuccess={handlePaymentSuccess}
+                    onCancel={() => setActivePlan(null)}
+                />
+            )}
+
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold">Subscription Plans</h1>
                 <p className="text-muted-foreground mt-2">Choose a plan to unlock more tweets</p>
@@ -160,7 +263,7 @@ export default function SubscriptionPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {PLANS.map((plan) => {
                     const isCurrent = currentPlan === plan.key;
-                    const isLoading = loading === plan.key;
+                    const isProcessing = loading === plan.key;
                     const isFree = plan.key === "free";
 
                     return (
@@ -212,7 +315,7 @@ export default function SubscriptionPage() {
                                     disabled={!!loading}
                                     className="rounded-full w-full font-bold"
                                 >
-                                    {isLoading ? (
+                                    {isProcessing ? (
                                         <Loader2 className="animate-spin h-4 w-4" />
                                     ) : (
                                         `Subscribe – ₹${plan.price}`
