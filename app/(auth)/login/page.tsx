@@ -145,11 +145,18 @@ function LoginForm() {
                     </Button>
                 </form>
 
-                <div className="text-sm text-muted-foreground">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/register" className="text-primary hover:underline">
-                        Sign up
-                    </Link>
+                <div className="text-sm text-muted-foreground space-y-1">
+                    <div>
+                        <Link href="/forgot-password" className="text-primary hover:underline">
+                            Forgot password?
+                        </Link>
+                    </div>
+                    <div>
+                        Don&apos;t have an account?{" "}
+                        <Link href="/register" className="text-primary hover:underline">
+                            Sign up
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

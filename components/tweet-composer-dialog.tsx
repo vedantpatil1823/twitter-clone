@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { TweetComposer } from "@/components/tweet-composer";
@@ -21,6 +22,7 @@ export function TweetComposerDialog({ children }: TweetComposerDialogProps) {
                 <div className="contents">{children}</div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] p-0 gap-0 top-[10%] translate-y-0">
+                <DialogTitle className="sr-only">Compose Tweet</DialogTitle>
                 <div className="flex items-center gap-4 px-4 pt-3 pb-1">
                     <button
                         onClick={() => setOpen(false)}
