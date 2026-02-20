@@ -28,6 +28,18 @@ export const ourFileRouter = {
             // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
             return { uploadedBy: metadata.userId };
         }),
+
+    audioUploader: f({ audio: { maxFileSize: "128MB", maxFileCount: 1 } })
+        .middleware(async () => {
+            const session = await auth();
+            if (!session?.user) throw new Error("Unauthorized");
+            return { userId: session.user.id };
+        })
+        .onUploadComplete(async ({ metadata, file }) => {
+            console.log("Audio upload complete for userId:", metadata.userId);
+            console.log("Audio file url", file.url);
+            return { uploadedBy: metadata.userId };
+        }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

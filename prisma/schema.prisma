@@ -44,6 +44,7 @@ model Tweet {
   id        String   @id @default(cuid())
   content   String   @db.VarChar(280)
   image     String?
+  audioUrl  String?
   authorId  String
   parentId  String?
   createdAt DateTime @default(now())
@@ -172,4 +173,16 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  purpose   String   @default("audio_tweet")
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

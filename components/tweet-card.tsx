@@ -29,6 +29,7 @@ export type TweetWithAuthor = {
     id: string;
     content: string;
     image: string | null;
+    audioUrl?: string | null;
     createdAt: Date;
     parentId: string | null;
     author: {
@@ -172,6 +173,22 @@ export function TweetCard({ tweet }: { tweet: TweetWithAuthor }) {
                             width={500}
                             height={300}
                             className="w-full object-cover max-h-[300px]"
+                        />
+                    </div>
+                )}
+
+                {/* Audio player */}
+                {tweet.audioUrl && (
+                    <div
+                        className="mb-3 flex items-center gap-2 p-3 rounded-2xl border border-border bg-muted/30"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <span className="text-lg">🎙️</span>
+                        <audio
+                            controls
+                            src={tweet.audioUrl}
+                            className="flex-1 h-8"
+                            style={{ minWidth: 0 }}
                         />
                     </div>
                 )}

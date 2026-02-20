@@ -5,6 +5,22 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+export async function createAudioTweet(content: string, audioUrl: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Not authenticated");
+
+    await prisma.tweet.create({
+        data: {
+            content,
+            audioUrl,
+            authorId: session.user.id,
+        },
+    });
+
+    revalidatePath("/");
+}
+
+
 const tweetSchema = z.object({
     content: z.string().min(1, "Tweet cannot be empty").max(280, "Tweet is too long"),
     image: z.string().url().optional().or(z.literal("")),

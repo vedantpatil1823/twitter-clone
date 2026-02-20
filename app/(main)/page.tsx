@@ -5,6 +5,7 @@ import { TweetComposer } from "@/components/tweet-composer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LiveFeedBanner } from "@/components/live-feed-banner";
 import { KeywordNotifier } from "@/components/keyword-notifier";
+import { AudioTweetComposer } from "@/components/audio-tweet-composer";
 
 async function getTweets(userId: string, tab: "for-you" | "following") {
     const whereClause =
@@ -81,6 +82,11 @@ export default async function HomePage() {
                     {/* Tweet composer */}
                     <div className="border-b border-border px-4 py-3">
                         <TweetComposer />
+                    </div>
+
+                    {/* Audio tweet composer */}
+                    <div className="border-b border-border px-4 py-3">
+                        <AudioTweetComposer />
                     </div>
 
                     {/* Live "new tweets" banner — polls every 30s */}
