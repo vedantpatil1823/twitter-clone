@@ -131,9 +131,9 @@ export async function RightSidebar() {
                             />
                         </div>
                     ))}
-                    <button className="w-full text-left px-4 py-4 text-primary hover:bg-foreground/5 transition-colors rounded-b-2xl text-sm">
+                    <Link href="/explore" className="block w-full text-left px-4 py-4 text-primary hover:bg-foreground/5 transition-colors rounded-b-2xl text-sm">
                         <T k="showMore" />
-                    </button>
+                    </Link>
                 </div>
             )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { UploadButton } from "@/lib/uploadthing";
 import { useLanguage } from "@/context/language-context";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 
 const MAX_CHARS = 280;
 
@@ -27,7 +28,38 @@ export function TweetComposer({ parentId, placeholder, onPost }: TweetComposerPr
     const [imageUrl, setImageUrl] = useState("");
     const [isUploading, setIsUploading] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+    // Close emoji picker on outside click
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        if (showEmojiPicker) document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [showEmojiPicker]);
+
+    const onEmojiClick = (emojiData: { emoji: string }) => {
+        const ta = textareaRef.current;
+        if (ta) {
+            const start = ta.selectionStart ?? content.length;
+            const end = ta.selectionEnd ?? content.length;
+            const newContent = content.slice(0, start) + emojiData.emoji + content.slice(end);
+            setContent(newContent);
+            // Refocus and set cursor after emoji
+            setTimeout(() => {
+                ta.focus();
+                const pos = start + emojiData.emoji.length;
+                ta.setSelectionRange(pos, pos);
+            }, 0);
+        } else {
+            setContent((prev) => prev + emojiData.emoji);
+        }
+    };
 
     const charsLeft = MAX_CHARS - content.length;
     const isOverLimit = charsLeft < 0;
@@ -138,9 +170,28 @@ export function TweetComposer({ parentId, placeholder, onPost }: TweetComposerPr
                                 />
                             )}
                         </div>
-                        <button className="p-2 rounded-full hover:bg-primary/10 transition-colors" title="Add emoji">
-                            <Smile className="h-5 w-5" />
-                        </button>
+                        <div className="relative" ref={emojiPickerRef}>
+                            <button
+                                type="button"
+                                className="p-2 rounded-full hover:bg-primary/10 transition-colors"
+                                title="Add emoji"
+                                onClick={() => setShowEmojiPicker((v) => !v)}
+                            >
+                                <Smile className="h-5 w-5" />
+                            </button>
+                            {showEmojiPicker && (
+                                <div className="absolute left-0 bottom-10 z-50 shadow-xl rounded-xl overflow-hidden">
+                                    <EmojiPicker
+                                        onEmojiClick={onEmojiClick}
+                                        theme={Theme.AUTO}
+                                        width={320}
+                                        height={400}
+                                        searchPlaceHolder="Search emoji..."
+                                        lazyLoadEmojis
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right side: progress + post */}
