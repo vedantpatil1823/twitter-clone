@@ -42,6 +42,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   loginHistory  LoginHistory[]
+  conversations ConversationParticipant[]
+  messages      Message[]
 
   @@index([username])
   @@index([email])
@@ -207,4 +209,45 @@ model LoginHistory {
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([updatedAt(sort: Desc)])
+}
+
+model ConversationParticipant {
+  id             String   @id @default(cuid())
+  userId         String
+  conversationId String
+  hasSeenLatest  Boolean  @default(true)
+  joinedAt       DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  content        String   @db.Text
+  senderId       String
+  conversationId String
+  createdAt      DateTime @default(now())
+
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt(sort: Asc)])
 }
