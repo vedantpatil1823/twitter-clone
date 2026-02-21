@@ -13,8 +13,24 @@ export const PLANS = {
 
 export type PlanKey = keyof typeof PLANS;
 
+function isWithinPaymentWindow(): boolean {
+    const now = new Date();
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const utcMs = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+    const istDate = new Date(utcMs + istOffsetMs);
+    const hours = istDate.getHours();
+    return hours >= 10 && hours < 11;
+}
+
 export async function POST(req: Request) {
     try {
+        if (!isWithinPaymentWindow()) {
+            return NextResponse.json(
+                { error: "Payments are only allowed between 10:00 AM and 11:00 AM IST." },
+                { status: 403 }
+            );
+        }
+
         const session = await auth();
         if (!session?.user?.id || !session.user.email) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

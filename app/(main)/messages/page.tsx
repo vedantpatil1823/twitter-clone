@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/language-context";
 
 const conversations = [
     {
@@ -54,6 +55,7 @@ export default function MessagesPage() {
     const [selectedConv, setSelectedConv] = useState(conversations[0]);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState(chatMessages);
+    const { t } = useLanguage();
 
     const sendMessage = () => {
         if (!message.trim()) return;
@@ -70,7 +72,7 @@ export default function MessagesPage() {
             <div className="w-full md:w-[360px] border-r border-border flex flex-col shrink-0">
                 <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3">
                     <div className="flex items-center justify-between mb-3">
-                        <h1 className="font-bold text-xl">Messages</h1>
+                        <h1 className="font-bold text-xl">{t("messages" as never)}</h1>
                         <Button variant="ghost" size="icon" className="rounded-full">
                             <Edit className="h-5 w-5" />
                         </Button>
@@ -78,7 +80,7 @@ export default function MessagesPage() {
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search Direct Messages"
+                            placeholder={t("searchPeople" as never)}
                             className="pl-10 rounded-full bg-muted border-transparent"
                         />
                     </div>
@@ -170,7 +172,7 @@ export default function MessagesPage() {
                 {/* Message Input */}
                 <div className="border-t border-border p-4 flex items-center gap-3">
                     <Input
-                        placeholder="Start a new message"
+                        placeholder={t("typeMessage" as never)}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && sendMessage()}

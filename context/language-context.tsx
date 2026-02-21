@@ -46,12 +46,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const setLang = useCallback((newLang: LangCode) => {
+        console.log("[i18n] setLang called:", newLang);
         setLangState(newLang);
         localStorage.setItem(STORAGE_KEY, newLang);
     }, []);
 
     const t = useCallback(
-        (key: TranslationKeys): string => TRANSLATIONS[lang][key] ?? en[key] ?? key,
+        (key: TranslationKeys): string => {
+            const result = TRANSLATIONS[lang]?.[key] ?? en[key] ?? key;
+            return result;
+        },
         [lang]
     );
 

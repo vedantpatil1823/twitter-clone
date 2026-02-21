@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -21,6 +22,7 @@ model User {
   bio               String?   @db.VarChar(160)
   location          String?
   website           String?
+  phone             String?   @unique
   verified          Boolean   @default(false)
   lastPasswordReset DateTime?
   plan              String    @default("free")
@@ -39,6 +41,7 @@ model User {
   sentNotifs    Notification[] @relation("sender")
   accounts      Account[]
   sessions      Session[]
+  loginHistory  LoginHistory[]
 
   @@index([username])
   @@index([email])
@@ -189,4 +192,19 @@ model OtpCode {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+model LoginHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  browser    String
+  os         String
+  deviceType String   // "desktop" | "mobile" | "tablet"
+  ipAddress  String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
 }

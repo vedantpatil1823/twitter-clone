@@ -3,17 +3,11 @@ import { signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
-    Home,
-    Search,
-    Bell,
-    Mail,
-    Bookmark,
-    User,
     MoreHorizontal,
     Feather,
     LogOut,
     Settings,
-    CreditCard,
+    User,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,15 +19,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { TweetComposerDialog } from "@/components/tweet-composer-dialog";
+import { SidebarNav } from "@/components/sidebar-nav";
+import { T } from "@/components/translated-text";
 
-const navItems = [
-    { href: "/", icon: Home, label: "Home" },
-    { href: "/explore", icon: Search, label: "Explore" },
-    { href: "/notifications", icon: Bell, label: "Notifications" },
-    { href: "/messages", icon: Mail, label: "Messages" },
-    { href: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
-    { href: "/subscription", icon: CreditCard, label: "Subscription" },
-];
+
 
 export default async function LeftSidebar() {
     const session = await auth();
@@ -57,45 +46,17 @@ export default async function LeftSidebar() {
                     </svg>
                 </Link>
 
-                {/* Nav links */}
-                {navItems.map(({ href, icon: Icon, label }) => (
-                    <Link
-                        key={href}
-                        href={href}
-                        className="flex items-center gap-4 p-3 rounded-full hover:bg-foreground/10 transition-colors group w-fit xl:w-full"
-                    >
-                        <div className="relative">
-                            <Icon className="h-6 w-6" />
-                            {label === "Notifications" && unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                    {unreadCount > 9 ? "9+" : unreadCount}
-                                </span>
-                            )}
-                        </div>
-                        <span className="hidden xl:block text-lg font-medium group-hover:text-primary transition-colors">
-                            {label}
-                        </span>
-                    </Link>
-                ))}
-
-                {/* Profile link */}
-                {user && (
-                    <Link
-                        href={`/profile/${session?.user?.username ?? "me"}`}
-                        className="flex items-center gap-4 p-3 rounded-full hover:bg-foreground/10 transition-colors group w-fit xl:w-full"
-                    >
-                        <User className="h-6 w-6" />
-                        <span className="hidden xl:block text-lg font-medium group-hover:text-primary transition-colors">
-                            Profile
-                        </span>
-                    </Link>
-                )}
+                {/* Nav links + Profile */}
+                <SidebarNav
+                    unreadCount={unreadCount}
+                    profileHref={`/profile/${session?.user?.username ?? "me"}`}
+                />
 
                 {/* Post button */}
                 <TweetComposerDialog>
                     <Button className="mt-4 rounded-full font-bold xl:w-full" size="lg">
                         <Feather className="h-5 w-5 xl:hidden" />
-                        <span className="hidden xl:block">Post</span>
+                        <span className="hidden xl:block"><T k="post" /></span>
                     </Button>
                 </TweetComposerDialog>
             </div>
@@ -122,13 +83,13 @@ export default async function LeftSidebar() {
                         <DropdownMenuItem asChild>
                             <Link href={`/profile/${session?.user?.username}`}>
                                 <User className="h-4 w-4 mr-2" />
-                                View profile
+                                <T k="viewProfile" />
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/settings/profile">
                                 <Settings className="h-4 w-4 mr-2" />
-                                Settings
+                                <T k="settings" />
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -141,7 +102,7 @@ export default async function LeftSidebar() {
                             >
                                 <button type="submit" className="flex items-center w-full text-red-500">
                                     <LogOut className="h-4 w-4 mr-2" />
-                                    Sign out @{session?.user?.username}
+                                    <T k="signOut" /> @{session?.user?.username}
                                 </button>
                             </form>
                         </DropdownMenuItem>
@@ -149,7 +110,7 @@ export default async function LeftSidebar() {
                 </DropdownMenu>
             ) : (
                 <Link href="/login">
-                    <Button className="rounded-full w-full font-bold">Sign in</Button>
+                    <Button className="rounded-full w-full font-bold"><T k="signIn" /></Button>
                 </Link>
             )}
         </aside>

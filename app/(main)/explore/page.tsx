@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FollowButton } from "@/components/follow-button";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
+import { T } from "@/components/translated-text";
 
 async function getTrendingHashtags() {
     const tweets = await prisma.tweet.findMany({
@@ -114,7 +115,7 @@ export default async function ExplorePage({
                     <div className="border-b border-border">
                         <div className="px-4 py-3 flex items-center gap-2">
                             <Users className="h-4 w-4 text-primary" />
-                            <h2 className="font-bold">People</h2>
+                            <h2 className="font-bold"><T k="people" /></h2>
                         </div>
                         {userResults.map((user) => {
                             const isFollowing = Array.isArray(user.followers) && user.followers.length > 0;
@@ -175,7 +176,7 @@ export default async function ExplorePage({
     return (
         <div>
             <div className="sticky top-0 z-10 backdrop-blur-md bg-background/80 border-b border-border px-4 py-3">
-                <h1 className="text-xl font-bold mb-3">Explore</h1>
+                <h1 className="text-xl font-bold mb-3"><T k="explore" /></h1>
                 <ExploreSearch initialQuery="" />
             </div>
 
@@ -199,7 +200,7 @@ export default async function ExplorePage({
                         <div className="border-b border-border p-4">
                             <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
                                 <TrendingUp className="h-5 w-5 text-primary" />
-                                Trending Hashtags
+                                <T k="trending" />
                             </h2>
                             <div className="space-y-3">
                                 {trending.map(({ tag, count }) => (

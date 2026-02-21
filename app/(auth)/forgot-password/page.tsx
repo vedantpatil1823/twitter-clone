@@ -11,7 +11,7 @@ type Step = "email" | "otp" | "done";
 
 export default function ForgotPasswordPage() {
     const [step, setStep] = useState<Step>("email");
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [otp, setOtp] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -20,18 +20,22 @@ export default function ForgotPasswordPage() {
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email.trim()) return;
+        if (!identifier.trim()) return;
         setLoading(true);
         try {
             const res = await fetch("/api/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, step: "send-otp" }),
+                body: JSON.stringify({ identifier, step: "send-otp" }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             setStep("otp");
-            toast.success("OTP sent to your email!");
+            if (data.demoOtp) {
+                toast.success(`Demo OTP for testing: ${data.demoOtp}`);
+            } else {
+                toast.success("OTP sent!");
+            }
         } catch (err: unknown) {
             toast.error((err as Error).message);
         } finally {
@@ -47,7 +51,7 @@ export default function ForgotPasswordPage() {
             const res = await fetch("/api/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, step: "verify-otp", code: otp }),
+                body: JSON.stringify({ identifier, step: "verify-otp", code: otp }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
@@ -83,8 +87,8 @@ export default function ForgotPasswordPage() {
                 <div>
                     <h1 className="text-2xl font-bold">Forgot password?</h1>
                     <p className="text-muted-foreground text-sm mt-1">
-                        {step === "email" && "Enter your email and we'll send you a one-time code."}
-                        {step === "otp" && `We sent a 6-digit code to ${email}`}
+                        {step === "email" && "Enter your email or phone number and we'll send you a one-time code."}
+                        {step === "otp" && `We sent a 6-digit code to ${identifier}`}
                         {step === "done" && "Your new password is ready. Save it somewhere safe!"}
                     </p>
                 </div>
@@ -93,10 +97,10 @@ export default function ForgotPasswordPage() {
                 {step === "email" && (
                     <form onSubmit={handleSendOtp} className="space-y-4">
                         <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            placeholder="Enter your email or phone number"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
                             required
                             className="rounded-full px-4"
                         />

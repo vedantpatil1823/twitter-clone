@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { TweetCard, TweetWithAuthor } from "@/components/tweet-card";
 import { Bookmark } from "lucide-react";
+import { T } from "@/components/translated-text";
 
 export default async function BookmarksPage() {
     const session = await auth();
@@ -37,7 +38,7 @@ export default async function BookmarksPage() {
     return (
         <div>
             <div className="sticky top-0 z-10 backdrop-blur-md bg-background/80 border-b border-border px-4 py-3">
-                <h1 className="text-xl font-bold">Bookmarks</h1>
+                <h1 className="text-xl font-bold"><T k="bookmarks" /></h1>
                 <p className="text-xs text-muted-foreground">@{session.user.username}</p>
             </div>
 
@@ -46,9 +47,9 @@ export default async function BookmarksPage() {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <Bookmark className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-2">Save posts for later</h3>
+                    <h3 className="text-2xl font-bold mb-2"><T k="noBookmarks" /></h3>
                     <p className="text-muted-foreground max-w-xs">
-                        Bookmark posts to easily find them again in the future.
+                        <T k="noBookmarksDesc" />
                     </p>
                 </div>
             ) : (

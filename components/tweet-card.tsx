@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { likeTweet, retweetTweet, bookmarkTweet, deleteTweet } from "@/actions/tweet";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/language-context";
 
 export type TweetWithAuthor = {
     id: string;
@@ -54,6 +55,7 @@ export type TweetWithAuthor = {
 export function TweetCard({ tweet }: { tweet: TweetWithAuthor }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const { t } = useLanguage();
 
     const [liked, setLiked] = useState(tweet.isLiked ?? false);
     const [likeCount, setLikeCount] = useState(tweet._count.likes);
@@ -149,10 +151,10 @@ export function TweetCard({ tweet }: { tweet: TweetWithAuthor }) {
                                         onClick={handleDelete}
                                     >
                                         <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete tweet
+                                        {t("delete" as never)}
                                     </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem>Copy link</DropdownMenuItem>
+                                <DropdownMenuItem>{t("copyLink" as never)}</DropdownMenuItem>
                                 {!isOwner && <DropdownMenuItem>Report tweet</DropdownMenuItem>}
                             </DropdownMenuContent>
                         </DropdownMenu>

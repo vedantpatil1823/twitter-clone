@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LiveFeedBanner } from "@/components/live-feed-banner";
 import { KeywordNotifier } from "@/components/keyword-notifier";
 import { AudioTweetComposer } from "@/components/audio-tweet-composer";
+import { T } from "@/components/translated-text";
 
 async function getTweets(userId: string, tab: "for-you" | "following") {
     const whereClause =
@@ -57,7 +58,7 @@ export default async function HomePage() {
     return (
         <div>
             <div className="sticky top-0 z-10 backdrop-blur-md bg-background/80 border-b border-border">
-                <h1 className="px-4 py-3 text-xl font-bold">Home</h1>
+                <h1 className="px-4 py-3 text-xl font-bold"><T k="home" /></h1>
             </div>
 
             <Tabs defaultValue="for-you">
@@ -67,13 +68,13 @@ export default async function HomePage() {
                             value="for-you"
                             className="flex-1 rounded-none py-4 text-sm font-semibold data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
                         >
-                            For you
+                            <T k="forYou" />
                         </TabsTrigger>
                         <TabsTrigger
                             value="following"
                             className="flex-1 rounded-none py-4 text-sm font-semibold data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
                         >
-                            Following
+                            <T k="following" />
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -97,7 +98,7 @@ export default async function HomePage() {
 
                     {forYouTweets.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <p className="text-muted-foreground">No tweets yet. Be the first to post!</p>
+                            <p className="text-muted-foreground"><T k="noTweets" /></p>
                         </div>
                     ) : (
                         forYouTweets.map((tweet) => (
@@ -109,9 +110,9 @@ export default async function HomePage() {
                 <TabsContent value="following" className="mt-0">
                     {followingTweets.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-                            <h3 className="text-xl font-bold mb-2">Follow people to see their tweets</h3>
+                            <h3 className="text-xl font-bold mb-2"><T k="followingEmptyTitle" /></h3>
                             <p className="text-muted-foreground">
-                                When you follow someone, their tweets will show up here.
+                                <T k="followingEmptyDesc" />
                             </p>
                         </div>
                     ) : (

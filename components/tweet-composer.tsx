@@ -9,6 +9,7 @@ import { createTweet } from "@/actions/tweet";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { UploadButton } from "@/lib/uploadthing";
+import { useLanguage } from "@/context/language-context";
 
 const MAX_CHARS = 280;
 
@@ -20,6 +21,7 @@ interface TweetComposerProps {
 
 export function TweetComposer({ parentId, placeholder, onPost }: TweetComposerProps) {
     const { data: session } = useSession();
+    const { t } = useLanguage();
     const router = useRouter();
     const [content, setContent] = useState("");
     const [imageUrl, setImageUrl] = useState("");
@@ -82,7 +84,7 @@ export function TweetComposer({ parentId, placeholder, onPost }: TweetComposerPr
                     ref={textareaRef}
                     value={content}
                     onChange={handleChange}
-                    placeholder={placeholder ?? "What's happening?!"}
+                    placeholder={placeholder ?? t("tweetPlaceholder" as never)}
                     className="w-full bg-transparent resize-none outline-none text-lg placeholder:text-muted-foreground min-h-[60px] leading-relaxed"
                     rows={1}
                 />
@@ -181,7 +183,7 @@ export function TweetComposer({ parentId, placeholder, onPost }: TweetComposerPr
                             disabled={isEmpty || isOverLimit || isPending || isUploading}
                             onClick={handleSubmit}
                         >
-                            {isPending ? "Posting..." : parentId ? "Reply" : "Post"}
+                            {isPending ? t("posting" as never) : parentId ? t("replying" as never) : t("post" as never)}
                         </Button>
                     </div>
                 </div>

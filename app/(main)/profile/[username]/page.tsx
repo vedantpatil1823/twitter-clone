@@ -11,6 +11,7 @@ import { BadgeCheck, Calendar, Link2, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { NotificationToggle } from "@/components/notification-toggle";
+import { LoginHistoryTable } from "@/components/login-history-table";
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
@@ -170,7 +171,7 @@ export default async function ProfilePage({
             <Tabs defaultValue="posts">
                 <div className="sticky top-[57px] z-10 backdrop-blur-md bg-background/80 border-b border-border">
                     <TabsList className="w-full rounded-none bg-transparent h-auto">
-                        {["posts", "replies", "media", "likes"].map((tab) => (
+                        {(["posts", "replies", "media", "likes", ...(isOwnProfile ? ["login history"] : [])] as string[]).map((tab) => (
                             <TabsTrigger
                                 key={tab}
                                 value={tab}
@@ -207,6 +208,12 @@ export default async function ProfilePage({
                         <p className="text-muted-foreground">No likes yet.</p>
                     </div>
                 </TabsContent>
+
+                {isOwnProfile && (
+                    <TabsContent value="login history" className="mt-0">
+                        <LoginHistoryTable />
+                    </TabsContent>
+                )}
             </Tabs>
         </div>
     );

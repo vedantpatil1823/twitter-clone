@@ -6,6 +6,7 @@ import { Check, Loader2, Lock, X, CreditCard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/language-context";
 
 const PLANS = [
     {
@@ -47,12 +48,11 @@ const PLANS = [
 ];
 
 function isWithinPaymentWindow(): boolean {
-    return true; // ← TEMPORARY: bypass for testing, restore before submission
-    // const now = new Date();
-    // const istMs = now.getTime() + 5.5 * 60 * 60 * 1000;
-    // const ist = new Date(istMs);
-    // const totalMins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
-    // return totalMins >= 10 * 60 && totalMins < 11 * 60;
+    const now = new Date();
+    const istMs = now.getTime() + 5.5 * 60 * 60 * 1000;
+    const ist = new Date(istMs);
+    const hours = ist.getUTCHours();
+    return hours >= 10 && hours < 11;
 }
 
 // ── Mock Payment Modal ──────────────────────────────────────────────────
@@ -207,6 +207,7 @@ export default function SubscriptionPage() {
     const [activePlan, setActivePlan] = useState<(typeof PLANS)[number] | null>(null);
     const [loading, setLoading] = useState<string | null>(null);
     const currentPlan = (session?.user as { plan?: string })?.plan ?? "free";
+    const { t } = useLanguage();
 
     const handleSubscribe = (planKey: string) => {
         if (planKey === "free") return;
@@ -253,11 +254,11 @@ export default function SubscriptionPage() {
             )}
 
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold">Subscription Plans</h1>
-                <p className="text-muted-foreground mt-2">Choose a plan to unlock more tweets</p>
+                <h1 className="text-3xl font-bold">{t("subscription" as never)}</h1>
+                <p className="text-muted-foreground mt-2">{t("choosePlan" as never)}</p>
                 <div className="inline-flex items-center gap-2 mt-3 text-sm bg-amber-500/10 text-amber-600 border border-amber-500/30 px-4 py-2 rounded-full">
                     <Lock className="h-3.5 w-3.5" />
-                    Payments available only 10:00 AM – 11:00 AM IST
+                    {t("paymentsWindow" as never)}
                 </div>
             </div>
 
@@ -304,7 +305,7 @@ export default function SubscriptionPage() {
 
                             {isCurrent ? (
                                 <Button disabled variant="outline" className="rounded-full w-full">
-                                    Current Plan
+                                    {t("currentPlan" as never)}
                                 </Button>
                             ) : isFree ? (
                                 <Button disabled variant="ghost" className="rounded-full w-full">
@@ -319,7 +320,7 @@ export default function SubscriptionPage() {
                                     {isProcessing ? (
                                         <Loader2 className="animate-spin h-4 w-4" />
                                     ) : (
-                                        `Subscribe – ₹${plan.price}`
+                                        `${t("subscribe" as never)} – ₹${plan.price}`
                                     )}
                                 </Button>
                             )}

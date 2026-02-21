@@ -7,6 +7,7 @@ import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { SidebarSearch } from "@/components/sidebar-search";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { T } from "@/components/translated-text";
 
 async function getTrendingHashtags() {
     // Fetch recent 500 tweets and parse hashtags from content
@@ -66,10 +67,10 @@ export async function RightSidebar() {
 
             {/* What's Happening */}
             <div className="bg-muted/50 rounded-2xl mb-4">
-                <h2 className="font-bold text-xl px-4 pt-4 pb-2">What&apos;s happening</h2>
+                <h2 className="font-bold text-xl px-4 pt-4 pb-2"><T k="whatsHappening" /></h2>
                 {trends.length === 0 ? (
                     <p className="px-4 pb-4 text-sm text-muted-foreground">
-                        No trending topics yet. Post tweets with #hashtags!
+                        <T k="noTrending" />
                     </p>
                 ) : (
                     trends.map((trend, i) => (
@@ -78,7 +79,7 @@ export async function RightSidebar() {
                                 href={`/explore?q=${encodeURIComponent(trend.tag)}`}
                                 className="block w-full text-left px-4 py-3 hover:bg-foreground/5 transition-colors"
                             >
-                                <p className="text-muted-foreground text-xs">Trending</p>
+                                <p className="text-muted-foreground text-xs"><T k="trending" /></p>
                                 <p className="font-bold text-sm">{trend.tag}</p>
                                 <p className="text-muted-foreground text-xs">{trend.count} {trend.count === 1 ? "post" : "posts"}</p>
                             </Link>
@@ -91,7 +92,7 @@ export async function RightSidebar() {
             {/* Who to Follow */}
             {suggestions.length > 0 && (
                 <div className="bg-muted/50 rounded-2xl mb-4">
-                    <h2 className="font-bold text-xl px-4 pt-4 pb-2">Who to follow</h2>
+                    <h2 className="font-bold text-xl px-4 pt-4 pb-2"><T k="whoToFollow" /></h2>
                     {suggestions.map((user) => (
                         <div
                             key={user.id}
@@ -131,7 +132,7 @@ export async function RightSidebar() {
                         </div>
                     ))}
                     <button className="w-full text-left px-4 py-4 text-primary hover:bg-foreground/5 transition-colors rounded-b-2xl text-sm">
-                        Show more
+                        <T k="showMore" />
                     </button>
                 </div>
             )}
@@ -143,9 +144,9 @@ export async function RightSidebar() {
 
             {/* Footer Links */}
             <div className="flex flex-wrap gap-x-3 gap-y-1 px-2 text-xs text-muted-foreground">
-                {["Terms of Service", "Privacy Policy", "Cookie Policy", "Accessibility", "Ads info", "More"].map((link) => (
-                    <button key={link} className="hover:underline">
-                        {link}
+                {(["termsOfService", "privacyPolicy", "cookiePolicy", "accessibility", "adsInfo", "more"] as const).map((key) => (
+                    <button key={key} className="hover:underline">
+                        <T k={key} />
                     </button>
                 ))}
                 <span>© 2026 X Corp.</span>

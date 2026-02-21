@@ -29,7 +29,7 @@ export function KeywordNotifier({ tweets }: { tweets: { id: string; content: str
             if (matchedKeyword) {
                 notifiedIds.current.add(tweet.id);
                 new Notification(`🔔 Trending: "${matchedKeyword}"`, {
-                    body: tweet.content.slice(0, 120),
+                    body: tweet.content,
                     icon: "/favicon.ico",
                     tag: tweet.id,
                 });

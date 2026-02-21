@@ -19,15 +19,22 @@ function generateOtp(): string {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { email, step, code } = body as { email: string; step: string; code?: string };
+        const { identifier, step, code } = body as { identifier: string; step: string; code?: string };
 
-        if (!email || !step) {
+        if (!identifier || !step) {
             return NextResponse.json({ error: "Missing fields." }, { status: 400 });
         }
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: identifier },
+                    { phone: identifier }
+                ]
+            }
+        });
         if (!user) {
-            return NextResponse.json({ error: "No account found with that email." }, { status: 404 });
+            return NextResponse.json({ error: "No account found with that email or phone number." }, { status: 404 });
         }
 
         // ── Step 1: Send OTP ──
@@ -51,13 +58,19 @@ export async function POST(req: Request) {
             const otp = generateOtp();
             const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-            await prisma.otpCode.deleteMany({ where: { email, purpose: "forgot_password", used: false } });
-            await prisma.otpCode.create({ data: { email, code: otp, purpose: "forgot_password", expiresAt } });
+            await prisma.otpCode.deleteMany({ where: { email: identifier, purpose: "forgot_password", used: false } });
+            await prisma.otpCode.create({ data: { email: identifier, code: otp, purpose: "forgot_password", expiresAt } });
+
+            const isPhone = user.phone === identifier;
+            if (isPhone) {
+                // Mock SMS
+                return NextResponse.json({ success: true, demoOtp: otp });
+            }
 
             const resend = new Resend(process.env.RESEND_API_KEY);
             await resend.emails.send({
                 from: process.env.EMAIL_FROM ?? "onboarding@resend.dev",
-                to: email,
+                to: user.email,
                 subject: "Password Reset OTP",
                 html: `
                     <div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #eee;border-radius:12px;">
@@ -77,7 +90,7 @@ export async function POST(req: Request) {
             if (!code) return NextResponse.json({ error: "OTP required." }, { status: 400 });
 
             const otpRecord = await prisma.otpCode.findFirst({
-                where: { email, code, purpose: "forgot_password", used: false, expiresAt: { gt: new Date() } },
+                where: { email: identifier, code, purpose: "forgot_password", used: false, expiresAt: { gt: new Date() } },
             });
             if (!otpRecord) {
                 return NextResponse.json({ error: "Invalid or expired OTP." }, { status: 400 });
@@ -89,7 +102,7 @@ export async function POST(req: Request) {
             const hashed = await bcrypt.hash(newPassword, 10);
 
             await prisma.user.update({
-                where: { email },
+                where: { id: user.id },
                 data: { password: hashed, lastPasswordReset: new Date() },
             });
 

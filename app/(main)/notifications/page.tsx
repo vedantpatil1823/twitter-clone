@@ -6,6 +6,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { markNotificationsRead } from "@/actions/user";
 import { cn } from "@/lib/utils";
+import { T } from "@/components/translated-text";
 
 const notifIcons: Record<string, { icon: React.ElementType; color: string }> = {
     LIKE: { icon: Heart, color: "text-pink-500" },
@@ -52,7 +53,7 @@ export default async function NotificationsPage() {
     return (
         <div>
             <div className="sticky top-0 z-10 backdrop-blur-md bg-background/80 border-b border-border px-4 py-3">
-                <h1 className="text-xl font-bold">Notifications</h1>
+                <h1 className="text-xl font-bold"><T k="notifications" /></h1>
             </div>
 
             {notifications.length === 0 ? (
@@ -60,9 +61,9 @@ export default async function NotificationsPage() {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <Bell className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-2">Nothing to see here — yet</h3>
+                    <h3 className="text-2xl font-bold mb-2"><T k="noNotifications" /></h3>
                     <p className="text-muted-foreground max-w-xs">
-                        When someone likes, retweets, or follows you, you&apos;ll see it here.
+                        <T k="noNotificationsDesc" />
                     </p>
                 </div>
             ) : (

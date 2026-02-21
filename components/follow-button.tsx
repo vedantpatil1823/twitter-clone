@@ -5,6 +5,7 @@ import { followUser } from "@/actions/user";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/language-context";
 
 interface FollowButtonProps {
     targetUserId: string;
@@ -16,6 +17,7 @@ export function FollowButton({ targetUserId, isFollowing, className }: FollowBut
     const [following, setFollowing] = useState(isFollowing);
     const [isPending, startTransition] = useTransition();
     const [hovered, setHovered] = useState(false);
+    const { t } = useLanguage();
 
     const handleFollow = () => {
         const prev = following;
@@ -44,9 +46,9 @@ export function FollowButton({ targetUserId, isFollowing, className }: FollowBut
                 {isPending ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                 ) : hovered ? (
-                    "Unfollow"
+                    t("unfollow" as never)
                 ) : (
-                    "Following"
+                    t("following" as never)
                 )}
             </Button>
         );
@@ -59,7 +61,7 @@ export function FollowButton({ targetUserId, isFollowing, className }: FollowBut
             onClick={handleFollow}
             disabled={isPending}
         >
-            {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Follow"}
+            {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : t("follow" as never)}
         </Button>
     );
 }
